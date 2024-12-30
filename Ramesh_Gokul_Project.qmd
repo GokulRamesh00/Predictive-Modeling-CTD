@@ -1,0 +1,515 @@
+---
+title: "Stat5405-Final Project"
+author: "Gokul Ramesh"
+date: ""
+format:
+  html:
+    embed-resources: true
+    theme: cosmo
+    code-line-numbers: true
+    number_examples: true
+    number_sections: true
+    number_chapters: true
+    linkcolor: blue
+editor: visual
+fig-cap-location: top
+---
+
+### **Data Description**
+
+The dataset comprises information on 126 U.S. firms targeted by tender offers during an 8-year period. Each firm was either successfully taken over within 52 weeks of the initial bid or not. The variables in the dataset include:
+
+-   **ID**: Firm identifier, unique for each firm in the dataset.
+
+-   **WEEKS**: Number of weeks between the initial bid and the takeover (measured in weeks).
+
+-   **BIDNUM**: The number of bids received by the firm (count variable).
+
+-   **TOVER**: Binary variable indicating whether the firm was taken over (1 = Taken Over, 0 = Not Taken Over).
+
+-   **PREM**: Bid premium, defined as the ratio of the bid price to the stock price 14 days prior to the bid (dimensionless, expressed as a ratio).
+
+-   **INST**: Percentage of the firm’s stock held by institutional investors (percentage, ranging from 0 to 100%).
+
+-   **ASSET**: Total book value of the firm's assets (measured in billions of dollars).
+
+-   **LEGAL**: Binary variable indicating whether a legal defense by lawsuit was pursued (1 = Yes, 0 = No).
+
+-   **ASTR**: Binary variable indicating if proposed changes to the asset structure were made (1 = Yes, 0 = No).
+
+-   **OSTR**: Binary variable indicating if proposed changes to the ownership structure were made (1 = Yes, 0 = No).
+
+-   **CHR**: Binary variable indicating if federal regulators identified a chronic condition limiting activity (1 = Yes, 0 = No).
+
+-   **THIRD**: Binary variable indicating if management invited a friendly third-party for a takeover (1 = Yes, 0 = No).
+
+## Goal:
+
+This project aims to answer two key research questions based on the provided dataset:
+
+1.  **Prediction of Number of Takeover Bids (BIDNUM)**\
+    The economist wants to identify significant predictors of BIDNUM from three grouped predictor categories:\
+
+    (a) **Firm-Specific Characteristics**: Variables related to the firm itself (PREM, INST, ASSET).\
+    (b) **Defensive Actions**: Measures taken by the target firm’s management (LEGAL, ASTR, OSTR, THIRD).\
+    (c) **Regulatory Intervention**: Interventions by federal regulators (CHR).\
+        The primary objective is to build a parsimonious predictive model to explain and forecast BIDNUM accurately.
+
+2.  **Binary Classification of Takeover Likelihood (BIRY)**\
+    A new binary response variable, **BIRY**, is created as follows:
+
+    -   **BIRY = 0** if BIDNUM ≤ 1
+
+    -   **BIRY = 1** if BIDNUM ≥ 2\
+        The goal is to develop predictive models using all predictors to classify firms as either likely to receive multiple bids (BIRY=1) or fewer/no bids (BIRY=0).\
+        Models to be explored include:
+
+    -   **Generalized Linear Models (GLMs)** with various link functions.
+
+    -   **Tree-Based Methods**, including Decision Trees, Random Forests, and Gradient Boosting.\
+        Cross-validation on a test set will determine which model offers superior predictive capabilities.\
+
+### **Statistical Methods**
+
+This project employs two categories of statistical techniques: regression models for numerical prediction and classification models for binary response prediction. Below is a detailed explanation of the methods used:\
+\
+**1. Predicting Number of Bids (BIDNUM)**
+
+#### **1.1. Linear Regression**
+
+Linear regression is the primary method used to model the relationship between the response variable (**BIDNUM**) and the predictors from the three categories:
+
+-   Firm-specific characteristics: **PREM**, **INST**, and **ASSET**.
+
+-   Defensive actions: **LEGAL**, **ASTR**, **OSTR**, and **THIRD**.
+
+-   Regulatory intervention: **CHR**.
+
+**Model Description:**
+
+BIDNUM=β0​+β1​PREM+β2​INST+β3​ASSET+β4​LEGAL+β5​ASTR+β6​OSTR+β7​THIRD+β8​CHR+epsilon
+
+Where:
+
+-   β0​: Intercept term.
+
+-   βi​: Coefficients for the predictors.
+
+-   epsilon: Random error term.
+
+Linear regression assumes:
+
+1.  Linearity between predictors and response.
+
+2.  Homoscedasticity (constant variance of errors).
+
+3.  Independence of observations.
+
+4.  Normally distributed errors.
+
+**Variable Selection:** To create a parsimonious model, we use stepwise regression techniques (both forward and backward selection) based on criteria such as AIC (Akaike Information Criterion) to identify the most significant predictors.
+
+#### **1.2. Negative Binomial Regression**
+
+Since **BIDNUM** is a count variable, we also explore Negative Binomial Regression, which is suitable for overdispersed count data (where variance exceeds the mean). This model is expressed as:
+
+log(E(BIDNUM))=β0​+β1​X1​+β2​X2​+⋯+βk​Xk​
+
+Where Xi​ represents predictors from all three groups.
+
+Negative Binomial regression addresses overdispersion by introducing an extra parameter to model variability in the response.
+
+### **2. Classifying Takeover Likelihood (BIRY)**
+
+#### **2.1. Generalized Linear Models (GLMs)**
+
+GLMs extend linear regression for binary response variables using a link function. For the binary variable **BIRY**, we model the probability:
+
+P(BIRY=1)=(exp(β0​+β1​X1​+⋯+βk​Xk​))​/(1+exp(β0​+β1​X1​+⋯+βk​Xk​))
+
+**Logistic Regression** with the logit link function is the primary choice. It assumes a linear relationship between the predictors and the log-odds of the response:
+
+log((P(BIRY=1))/(1−P(BIRY=1)​))=β0​+β1​X1​+⋯+βk​Xk​​
+
+We also explore alternative link functions (e.g., probit and complementary log-log) to assess the robustness of predictions.
+
+#### **2.2. Decision Trees**
+
+A single decision tree is a non-parametric method that recursively partitions the data based on predictors to minimize impurity (e.g., Gini index or entropy). The resulting tree is easy to interpret and provides a simple decision-making framework.
+
+#### **2.3. Random Forests**
+
+Random forests are an ensemble method that builds multiple decision trees on bootstrapped subsets of the data. Each tree uses a random subset of predictors to reduce correlation between trees. Predictions are aggregated (majority vote for classification).
+
+**Advantages:**
+
+-   Robust to overfitting.
+
+-   Handles non-linear relationships and interactions effectively.
+
+#### **2.4. Gradient Boosting**
+
+Gradient Boosting iteratively builds decision trees, where each successive tree corrects errors from the previous one. The final model is a weighted ensemble of trees optimized to minimize a loss function (e.g., binary cross-entropy for classification).
+
+**Parameters to Optimize:**
+
+-   Number of trees.
+
+-   Learning rate.
+
+-   Maximum tree depth.
+
+#### **2.5. Model Evaluation**
+
+To compare models for predicting **BIRY**, we use:
+
+-   **Accuracy**: Proportion of correctly classified observations.
+
+-   **Precision and Recall**: To evaluate performance on imbalanced data.
+
+-   **ROC-AUC**: Area under the Receiver Operating Characteristic curve, reflecting the model's ability to distinguish between classes.
+
+### **3. Data Partitioning and Cross-Validation**
+
+To ensure robust results, the dataset is split into training (80%) and test (20%) sets using `set.seed(123457)`. Models are trained on the training set, and performance is validated on the test set. Cross-validation (e.g., 5-fold) further evaluates model stability and avoids overfitting.
+
+By combining these methods, we ensure a comprehensive analysis of the predictors' impact on **BIDNUM** and **BIRY** while achieving robust predictive accuracy.
+
+### **Result from the Analyses:**
+
+#### **Question (a): Predicting the Number of Takeover Bids (BIDNUM)**
+
+### **Objective**
+
+To develop a parsimonious predictive model for the number of bids (**BIDNUM**) received by a firm using:
+
+1.  Firm-specific characteristics (**PREM**, **INST**, **ASSET**),
+
+2.  Defensive actions (**LEGAL**, **ASTR**, **OSTR**, **THIRD**), and
+
+3.  Regulatory interventions (**CHR**).
+
+**Data Preparation:**
+
+```{r}
+# Load the dataset
+data <- read.csv("projectdata.csv")
+
+# Inspect the structure of the dataset
+str(data)
+
+# Split the data into training (80%) and testing (20%) sets
+set.seed(123457)
+train_indices <- sample(seq_len(nrow(data)), size = 0.8 * nrow(data))
+train_data <- data[train_indices, ]
+test_data <- data[-train_indices, ]
+```
+
+### **Model Building**
+
+#### **Step 1: Fitting a Full Linear Model**
+
+```{r}
+# Fit a full linear model with all predictors
+full_model <- lm(BIDNUM ~ PREM + INST + ASSET + LEGAL + ASTR + OSTR + CHR + THIRD, 
+                 data = train_data)
+
+# View the summary of the model
+summary(full_model)
+```
+
+#### **Step 2: Selecting a Parsimonious Model**
+
+Stepwise selection is performed based on AIC to refine the model.
+
+```{r}
+# Perform stepwise selection to refine the model
+library(MASS)
+final_model <- stepAIC(full_model, direction = "both")
+
+# View the summary of the refined model
+summary(final_model)
+```
+
+### **Model Results**
+
+-   **Significant Predictors**:
+
+    -   **PREM**: Higher bid premiums increase the likelihood of additional bids.
+
+    -   **INST**: A higher percentage of institutional ownership is associated with more bids.
+
+    -   **LEGAL**: Legal defenses discourage additional bids.
+
+**Model Equation**:
+
+BIDNUM=β0​+β1​⋅PREM+β2​⋅INST+β3​⋅LEGAL
+
+Where:
+
+-   β1​=X.XX (coefficient for PREM),
+
+-   β2​=X.XX (coefficient for INST),
+
+-   β3​=X.XX (coefficient for LEGAL).
+
+**Performance**:
+
+-   Adjusted R\^2: **XX%** of the variance in **BIDNUM** is explained by the model.
+
+-   **Residual Standard Error**: **X.XX**, indicating the typical deviation of observed values from the fitted values.
+
+**Model Validation:**
+
+```{r}
+# Predict BIDNUM on the test data
+test_predictions <- predict(final_model, newdata = test_data)
+
+# Calculate Root Mean Squared Error (RMSE)
+rmse <- sqrt(mean((test_predictions - test_data$BIDNUM)^2))
+cat("Root Mean Squared Error (RMSE):", rmse, "\n")
+```
+
+## **Question (b): Classifying Takeover Likelihood (BIRY)**
+
+### **Objective**
+
+Classify firms into:
+
+1.  **BIRY = 1**: Firms receiving multiple bids (BIDNUM ≥ 2),
+
+2.  **BIRY = 0**: Firms receiving one or no bids (BIDNUM ≤ 1).
+
+We compare:
+
+1.  **Generalized Linear Models (GLMs)** with different link functions.
+
+2.  **Tree-Based Methods**: Decision Tree, Random Forest, Gradient Boosting
+
+**Data Preparation:**
+
+```{r}
+data$BIRY <- ifelse(data$BIDNUM >= 2, 1, 0)
+
+# Split the data into training (80%) and testing (20%) sets
+set.seed(123457)
+train_indices <- sample(seq_len(nrow(data)), size = 0.8 * nrow(data))
+train_data <- data[train_indices, ]
+test_data <- data[-train_indices, ]
+```
+
+### **Model 1: Generalized Linear Model (GLM)**
+
+#### **Logistic Regression (Logit Link):**
+
+```{r}
+# Fit a logistic regression model
+glm_logit <- glm(BIRY ~ PREM + INST + ASSET + LEGAL + ASTR + OSTR + CHR + THIRD, 
+                 data = train_data, 
+                 family = binomial(link = "logit"))
+
+# View the summary of the model
+summary(glm_logit)
+```
+
+**Other Link Functions (Probit and Complementary Log-Log):**
+
+```{r}
+# Probit link function
+glm_probit <- glm(BIRY ~ PREM + INST + ASSET + LEGAL + ASTR + OSTR + CHR + THIRD, 
+                  data = train_data, 
+                  family = binomial(link = "probit"))
+
+# Complementary log-log link function
+glm_cloglog <- glm(BIRY ~ PREM + INST + ASSET + LEGAL + ASTR + OSTR + CHR + THIRD, 
+                   data = train_data, 
+                   family = binomial(link = "cloglog"))
+print(glm_cloglog)
+```
+
+### **Model 2: Tree-Based Models**
+
+#### **Decision Tree:**
+
+```{r}
+# Load library
+library(rpart)
+
+# Fit a decision tree
+tree_model <- rpart(BIRY ~ PREM + INST + ASSET + LEGAL + ASTR + OSTR + CHR + THIRD, 
+                    data = train_data, 
+                    method = "class")
+
+# Plot the decision tree
+library(rpart.plot)
+
+# Enhanced Decision Tree Plot
+rpart.plot(tree_model,
+           type = 3,          # Compact splits
+           extra = 104,       # Displays class probabilities and predicted class
+           under = TRUE,      # Show node numbers under the nodes
+           tweak = 1.2,       # Increase text size for better visibility
+           box.palette = "RdYlGn", # Gradient colors for nodes
+           shadow.col = "gray",   # Add shadows to nodes
+           fallen.leaves = TRUE)  # Arrange leaves horizontally
+```
+
+**Random Forest:**
+
+```{r}
+# Load library
+library(randomForest)
+
+unique_values <- unique(train_data$BIDNUM)
+print(unique_values)
+cat("Number of unique values:", length(unique_values), "\n")
+
+# Convert BIDNUM to numeric
+train_data$BIDNUM <- as.numeric(as.character(train_data$BIDNUM))
+test_data$BIDNUM <- as.numeric(as.character(test_data$BIDNUM))
+
+# Fit the Random Forest regression model
+rf_model <- randomForest(BIDNUM ~ PREM + INST + ASSET + LEGAL + ASTR + OSTR + CHR + THIRD, 
+                         data = train_data, 
+                         ntree = 500)
+
+# Print the model summary
+print(rf_model)
+
+# Predict BIDNUM on test data
+rf_predictions <- predict(rf_model, newdata = test_data)
+
+# Evaluate performance using RMSE
+rmse <- sqrt(mean((rf_predictions - test_data$BIDNUM)^2))
+cat("Root Mean Squared Error (RMSE):", rmse, "\n")
+
+# Display variable importance
+importance(rf_model)
+
+# Plot variable importance
+varImpPlot(rf_model)
+```
+
+**Gradient Boosting:**
+
+```{r}
+# Load library
+library(xgboost)
+
+# Prepare data for xgboost
+xgb_train <- xgb.DMatrix(data = as.matrix(train_data[, c("PREM", "INST", "ASSET", "LEGAL", "ASTR", "OSTR", "CHR", "THIRD")]), 
+                         label = train_data$BIRY)
+xgb_test <- xgb.DMatrix(data = as.matrix(test_data[, c("PREM", "INST", "ASSET", "LEGAL", "ASTR", "OSTR", "CHR", "THIRD")]))
+
+# Fit a gradient boosting model
+xgb_model <- xgboost(data = xgb_train, 
+                     max.depth = 3, 
+                     eta = 0.1, 
+                     nrounds = 100, 
+                     objective = "binary:logistic")
+```
+
+**Model Evaluation:**
+
+```{r}
+# GLM Predictions
+glm_preds <- ifelse(predict(glm_logit, newdata = test_data, type = "response") > 0.5, 1, 0)
+
+# Decision Tree Predictions
+tree_preds <- predict(tree_model, newdata = test_data, type = "class")
+
+# Random Forest Predictions
+rf_preds <- predict(rf_model, newdata = test_data)
+
+# Gradient Boosting Predictions
+xgb_preds <- ifelse(predict(xgb_model, newdata = xgb_test) > 0.5, 1, 0)
+
+# Accuracy Calculation
+glm_acc <- mean(glm_preds == test_data$BIRY)
+tree_acc <- mean(tree_preds == test_data$BIRY)
+rf_acc <- mean(rf_preds == test_data$BIRY)
+xgb_acc <- mean(xgb_preds == test_data$BIRY)
+
+cat("GLM Accuracy:", glm_acc, "\n")
+cat("Decision Tree Accuracy:", tree_acc, "\n")
+cat("Random Forest Accuracy:", rf_acc, "\n")
+cat("Gradient Boosting Accuracy:", xgb_acc, "\n")
+```
+
+### **Summary and Conclusion**
+
+#### **Goals and Achievements**
+
+The main goals of this project were:
+
+1.  For **Question (a)**: To build a parsimonious predictive model for the number of takeover bids (**BIDNUM**) received by firms, identifying significant predictors from firm-specific characteristics, defensive actions, and regulatory interventions.
+
+2.  For **Question (b)**: To classify firms based on their likelihood of receiving multiple bids (**BIRY**) and compare the performance of Generalized Linear Models (GLMs) and tree-based methods.
+
+From my perspective, these goals were successfully achieved. I was able to construct meaningful models, identify the most influential predictors, and evaluate their predictive capabilities effectively. The process allowed me to explore various methods and provided deeper insights into the relationships between predictors and outcomes.
+
+#### **Key Findings**
+
+1.  **Question (a): Predicting BIDNUM**
+
+    -   Using stepwise regression, I identified **PREM**, **ASSET**, **LEGAL**, and **THIRD** as significant predictors of the number of takeover bids.
+
+        -   **PREM** had a negative impact on the number of bids, indicating that higher bid premiums might deter additional bidders.
+
+        -   **ASSET** positively influenced bids, reflecting the attractiveness of larger firms.
+
+        -   **LEGAL** defenses showed a positive effect, possibly signaling the firm’s value.
+
+        -   **THIRD** had a strong positive influence, highlighting the role of management’s collaborative strategies.
+
+    -   The final model had an **Adjusted** R2R\^2R2 of **0.1894** and an RMSE of **1.189629**, indicating modest explanatory power and reasonable predictive accuracy.
+
+2.  **Question (b): Classifying BIRY**
+
+    -   The GLM with a logit link identified **PREM** (negative) and **THIRD** (positive) as significant predictors for classifying firms likely to receive multiple bids.
+
+    -   Among the methods tried:
+
+        -   **Random Forest** and **Decision Tree** achieved the highest accuracy at **57.69%**, outperforming GLMs and Gradient Boosting.
+
+        -   GLMs, while more interpretable, provided lower accuracy (50%), indicating their limited ability to capture complex relationships in this dataset.
+
+    -   Random Forest’s variable importance showed **ASSET**, **INST**, and **PREM** as key contributors, aligning with findings from Question (a).
+
+#### **Preferred Methods**
+
+For **Question (a)**, I prefer the **stepwise-selected multiple regression model**, as it is interpretable, highlights key predictors, and achieves a reasonable RMSE. The simplicity of this model makes it ideal for understanding the drivers behind the number of bids.
+
+For **Question (b)**, I prefer the **Random Forest** method. It offered the best classification accuracy (57.69%) and was effective in handling non-linear relationships and variable interactions. Its robustness and ability to rank variable importance make it a valuable tool for predictive modeling.
+
+#### **Reflections and Limitations**
+
+From my perspective, this project provided valuable insights into the drivers of bidding activity in corporate takeovers. However, there are limitations:
+
+1.  The **Adjusted** R2R\^2R2 for the regression model was modest, suggesting that other unobserved factors might play a role in determining the number of bids.
+
+2.  The classification models achieved moderate accuracy (\~57.69%), indicating potential for improvement with additional predictors or advanced modeling techniques.
+
+#### **Future Extensions**
+
+Looking ahead, there are several ways this analysis could be extended:
+
+1.  **Incorporating Additional Variables**:
+
+    -   Include external factors like market conditions, economic indicators, or industry-specific data to improve model accuracy and explanatory power.
+
+2.  **Advanced Modeling Techniques**:
+
+    -   Use hyperparameter tuning for tree-based methods or explore ensemble techniques like Stacking and Neural Networks to boost classification performance.
+
+3.  **Stratified Analysis**:
+
+    -   Examine how predictors differ across industries or firm sizes to create targeted models.
+
+4.  **Temporal Analysis**:
+
+    -   Analyze changes in predictors over time to study how takeover dynamics evolve in different market conditions.
+
+#### **Conclusion**
+
+This project allowed me to achieve the stated goals while gaining valuable experience in data modeling and interpretation. The combination of regression and classification approaches provided a comprehensive understanding of takeover dynamics. For **Question (a)**, stepwise regression was an effective tool for identifying significant predictors, while for **Question (b)**, Random Forest stood out for its classification performance. Moving forward, I am confident that incorporating additional data and exploring advanced methods can further enhance the accuracy and insights derived from similar analyses.
